@@ -8,15 +8,12 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 public final class ConfigWatcher implements AutoCloseable {
     private final Path file;
     private final Runnable onChange;
     private final WatchService watchService;
     private final Thread thread;
-    private final AtomicLong ignoreUntilNanos = new AtomicLong(0L);
     private volatile boolean running = true;
 
     public ConfigWatcher(Path file, Runnable onChange) throws IOException {
@@ -34,11 +31,6 @@ public final class ConfigWatcher implements AutoCloseable {
 
     public void start() {
         thread.start();
-    }
-
-    // Suppress watcher callbacks for the next `millis` ms (used right before our own writes).
-    public void suppress(long millis) {
-        ignoreUntilNanos.set(System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(millis));
     }
 
     @SuppressWarnings("unchecked")
@@ -61,9 +53,8 @@ public final class ConfigWatcher implements AutoCloseable {
             }
             if (!key.reset()) return;
             if (!triggered) continue;
-            if (System.nanoTime() < ignoreUntilNanos.get()) continue;
             try {
-                Thread.sleep(50); // debounce noisy editors
+                Thread.sleep(50); // debounce noisy editors that write in multiple chunks
             } catch (InterruptedException e) {
                 return;
             }

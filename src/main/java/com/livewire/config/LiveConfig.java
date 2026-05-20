@@ -16,7 +16,7 @@ public final class LiveConfig implements AutoCloseable {
         this.registry = new ConfigRegistry();
         this.store = new ConfigStore(configFile);
         this.watcher = new ConfigWatcher(configFile, this::reload);
-        this.webServer = new ConfigWebServer(webPort, registry, store, watcher);
+        this.webServer = new ConfigWebServer(webPort, registry, store);
     }
 
     public ConfigRegistry registry() { return registry; }
@@ -41,14 +41,12 @@ public final class LiveConfig implements AutoCloseable {
     private void loadOrInit() throws IOException {
         Map<String, JsonNode> onDisk = store.read();
         if (onDisk.isEmpty()) {
-            watcher.suppress(500);
             store.write(registry);
             return;
         }
         applyFromDisk(onDisk);
         boolean newKeys = registry.bindings().stream().anyMatch(b -> !onDisk.containsKey(b.key()));
         if (newKeys) {
-            watcher.suppress(500);
             store.write(registry);
         }
     }

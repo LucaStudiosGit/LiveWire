@@ -16,13 +16,11 @@ public final class ConfigWebServer implements AutoCloseable {
     private final HttpServer server;
     private final ConfigRegistry registry;
     private final ConfigStore store;
-    private final ConfigWatcher watcher;
     private final ObjectMapper mapper;
 
-    public ConfigWebServer(int port, ConfigRegistry registry, ConfigStore store, ConfigWatcher watcher) throws IOException {
+    public ConfigWebServer(int port, ConfigRegistry registry, ConfigStore store) throws IOException {
         this.registry = registry;
         this.store = store;
-        this.watcher = watcher;
         this.mapper = store.mapper();
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", this::handleIndex);
@@ -38,7 +36,33 @@ public final class ConfigWebServer implements AutoCloseable {
             send(ex, 404, "Not Found", "text/plain");
             return;
         }
-        send(ex, 200, INDEX_HTML, "text/html; charset=utf-8");
+        send(ex, 200, INDEX_HTML.replace("<!--ROWS-->", renderRows()), "text/html; charset=utf-8");
+    }
+
+    private String renderRows() {
+        StringBuilder sb = new StringBuilder();
+        for (ConfigBinding b : registry.bindings()) {
+            String valueJson;
+            try {
+                valueJson = mapper.writeValueAsString(b.read());
+            } catch (Exception e) {
+                valueJson = "\"<error>\"";
+            }
+            sb.append("<tr>")
+              .append("<td><div>").append(escape(b.key())).append("</div>")
+              .append(b.description().isEmpty() ? "" : "<div class=\"desc\">" + escape(b.description()) + "</div>")
+              .append("</td>")
+              .append("<td class=\"type\">").append(escape(b.type().getSimpleName())).append("</td>")
+              .append("<td><input data-key=\"").append(escape(b.key())).append("\" value='").append(escape(valueJson)).append("'></td>")
+              .append("<td><button onclick=\"apply('").append(escape(b.key())).append("', this.parentNode.previousSibling.firstChild)\">Apply</button></td>")
+              .append("</tr>\n");
+        }
+        return sb.toString();
+    }
+
+    private static String escape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
     }
 
     private void handleApi(HttpExchange ex) throws IOException {
@@ -52,7 +76,6 @@ public final class ConfigWebServer implements AutoCloseable {
                     if (key.isEmpty()) { send(ex, 400, "missing key", "text/plain"); return; }
                     if (registry.get(key) == null) { send(ex, 404, "unknown key: " + key, "text/plain"); return; }
                     registry.setFromJson(key, value, mapper);
-                    watcher.suppress(500);
                     store.write(registry);
                     sendJson(ex, 200, snapshot());
                 }
@@ -102,66 +125,37 @@ public final class ConfigWebServer implements AutoCloseable {
               table { border-collapse:collapse; width:100%; }
               th, td { padding:8px 12px; border-bottom:1px solid #2a2a2a; text-align:left; vertical-align:top; }
               th { color:#9ca; font-weight:500; }
-              input { background:#1a1a1a; color:#eee; border:1px solid #333; padding:6px 10px; font:inherit; min-width:200px; border-radius:3px; }
+              input { background:#1a1a1a; color:#eee; border:1px solid #333; padding:6px 10px; font:inherit; min-width:240px; border-radius:3px; }
               button { background:#2a7a4a; color:#fff; border:0; padding:6px 14px; cursor:pointer; border-radius:3px; font:inherit; }
               button:hover { background:#358a5a; }
               .desc { color:#888; font-size:0.85em; margin-top:2px; }
               .type { color:#79a; font-size:0.85em; }
-              #status { padding:8px 0; }
-              .ok { color:#9c9; }
+              #status { padding:8px 0; color:#9c9; }
               .err { color:#f88; }
             </style></head><body>
-            <h1>LiveWire <small>live config</small></h1>
-            <div id="status">loading...</div>
-            <table id="t"><thead><tr><th>Key</th><th>Type</th><th>Value (JSON)</th><th></th></tr></thead><tbody></tbody></table>
+            <h1>LiveWire <small>live config &mdash; edit a value and click Apply, or edit the JSON file on disk</small></h1>
+            <div id="status">ready</div>
+            <table><thead><tr><th>Key</th><th>Type</th><th>Value (JSON)</th><th></th></tr></thead>
+            <tbody><!--ROWS--></tbody></table>
             <script>
-            async function refresh() {
-              try {
-                const r = await fetch('/api/config');
-                const data = await r.json();
-                const tbody = document.querySelector('#t tbody');
-                const active = document.activeElement;
-                const activeKey = active && active.dataset ? active.dataset.key : null;
-                tbody.innerHTML = '';
-                for (const e of data) {
-                  const tr = document.createElement('tr');
-                  const k = document.createElement('td');
-                  k.innerHTML = '<div>'+e.key+'</div>'+(e.description?'<div class="desc">'+e.description+'</div>':'');
-                  const t = document.createElement('td'); t.className='type'; t.textContent = e.type;
-                  const v = document.createElement('td');
-                  const inp = document.createElement('input');
-                  inp.value = JSON.stringify(e.value);
-                  inp.dataset.key = e.key;
-                  inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') apply(e.key, inp); });
-                  v.appendChild(inp);
-                  const a = document.createElement('td');
-                  const btn = document.createElement('button'); btn.textContent='Apply';
-                  btn.onclick = () => apply(e.key, inp);
-                  a.appendChild(btn);
-                  tr.append(k,t,v,a);
-                  tbody.appendChild(tr);
-                  if (activeKey === e.key) inp.focus();
-                }
-                if (!activeKey) setStatus('synced (' + data.length + ' fields)', false);
-              } catch (e) { setStatus('refresh failed: '+e.message, true); }
-            }
             function setStatus(msg, isErr) {
               const s = document.getElementById('status');
               s.textContent = msg;
-              s.className = isErr ? 'err' : 'ok';
+              s.className = isErr ? 'err' : '';
             }
             async function apply(key, inp) {
               try {
                 const value = JSON.parse(inp.value);
                 const r = await fetch('/api/config', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({key, value})});
                 if (!r.ok) throw new Error(await r.text());
-                setStatus('updated '+key, false);
+                setStatus('updated ' + key, false);
+                setTimeout(() => location.reload(), 300);
               } catch (e) {
-                setStatus('error on '+key+': '+e.message, true);
+                setStatus('error on ' + key + ': ' + e.message, true);
               }
             }
-            refresh();
-            setInterval(refresh, 2000);
+            // Light auto-refresh so changes from disk show up too.
+            setTimeout(() => { if (!document.querySelector('input:focus')) location.reload(); }, 3000);
             </script>
             </body></html>
             """;

@@ -1,0 +1,323 @@
+:root {
+  --bg: #f4efe6;
+  --bg-deep: #e8e1d3;
+  --ink: #1f2a2c;
+  --ink-soft: #4a5557;
+  --accent: #1f6f6b;
+  --accent-deep: #134a47;
+  --accent-soft: #cfe6e3;
+  --warn: #b35a1d;
+  --card: #ffffff;
+  --shadow: 0 8px 32px rgba(31, 58, 61, 0.08), 0 2px 6px rgba(31, 58, 61, 0.05);
+  --radius: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15201f;
+    --bg-deep: #0e1716;
+    --ink: #ecf1ef;
+    --ink-soft: #a9b6b4;
+    --accent: #6cc6bf;
+    --accent-deep: #3e9b94;
+    --accent-soft: #1d3a38;
+    --card: #1c2a29;
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-bottom));
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px 20px;
+}
+
+h1 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: var(--accent-deep);
+}
+
+@media (prefers-color-scheme: dark) {
+  h1 { color: var(--accent); }
+}
+
+.controls-top {
+  display: flex;
+  gap: 12px;
+}
+
+.toggle {
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle input { accent-color: var(--accent); }
+
+.screen {
+  display: none;
+  animation: fade 0.4s ease;
+}
+.screen.active { display: block; }
+
+@keyframes fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  font-size: 1.6rem;
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.lead {
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin: 16px 0 0;
+  border-top: 1px solid var(--bg-deep);
+  padding-top: 14px;
+}
+
+.setup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.setup label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  gap: 6px;
+}
+
+select {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--bg-deep);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 12px;
+  border: none;
+  padding: 14px 22px;
+  transition: transform 0.05s ease, background 0.15s ease;
+}
+button:active { transform: scale(0.97); }
+
+.primary {
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  width: 100%;
+  font-size: 1.05rem;
+}
+.primary:hover { background: var(--accent-deep); }
+
+.ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--bg-deep);
+}
+.ghost:hover { background: var(--bg-deep); color: var(--ink); }
+
+.link {
+  background: none;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  font-size: 0.9rem;
+  padding: 8px;
+  margin: 12px auto 0;
+  display: block;
+}
+
+.progress {
+  height: 6px;
+  background: var(--bg-deep);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0 4px 16px;
+}
+#progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
+  width: 0;
+  transition: width 0.4s ease;
+}
+
+.exercise-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.exercise-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.step {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+#exercise-name { margin: 0; font-size: 1.5rem; }
+
+.figure {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0 8px;
+  min-height: 180px;
+}
+
+.figure svg {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+}
+
+.cue {
+  font-size: 1.15rem;
+  color: var(--ink);
+  margin: 8px 0 6px;
+  font-weight: 500;
+}
+
+.detail {
+  color: var(--ink-soft);
+  margin: 0 0 18px;
+  font-size: 0.95rem;
+}
+
+.timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#time-left {
+  font-variant-numeric: tabular-nums;
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--accent-deep);
+  line-height: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  #time-left { color: var(--accent); }
+}
+
+.timer-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.rep-hint {
+  text-align: right;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  max-width: 50%;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 10px;
+}
+
+.controls .primary { width: 100%; }
+
+/* Breath pacing animation for the figure */
+.figure .breath {
+  transform-origin: center;
+  animation: breathe 8s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(0.96); }
+  50%      { transform: scale(1.04); }
+}
+.paused .figure .breath { animation-play-state: paused; }
+
+/* Mobile tweaks */
+@media (max-width: 480px) {
+  #app { padding: 12px; }
+  .card, .exercise-card { padding: 20px; }
+  h2 { font-size: 1.35rem; }
+  #time-left { font-size: 1.9rem; }
+  .controls { grid-template-columns: 1fr 1fr; }
+  .controls .primary { grid-column: 1 / -1; order: -1; }
+}

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1f3a3d" />
+    <title>Chair Tai Chi</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main id="app">
+      <header class="bar">
+        <h1>Chair Tai Chi</h1>
+        <div class="controls-top">
+          <label class="toggle">
+            <input type="checkbox" id="sound-toggle" checked />
+            <span>Chime</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="voice-toggle" />
+            <span>Voice</span>
+          </label>
+        </div>
+      </header>
+
+      <section id="welcome" class="screen active" aria-label="Welcome">
+        <div class="card">
+          <h2>A gentle seated practice</h2>
+          <p class="lead">
+            Eight slow movements you can do without leaving your chair. About
+            <strong id="total-minutes">15</strong> minutes. Breathe through the
+            nose, move only as far as is comfortable, and stop any movement
+            that hurts.
+          </p>
+          <div class="setup">
+            <label>
+              Pace
+              <select id="pace">
+                <option value="0.8">Slower</option>
+                <option value="1" selected>Standard</option>
+                <option value="1.25">Brisker</option>
+              </select>
+            </label>
+            <label>
+              Routine
+              <select id="routine">
+                <option value="short">Short</option>
+                <option value="full" selected>Standard</option>
+                <option value="long">Long</option>
+              </select>
+            </label>
+          </div>
+          <button id="start-btn" class="primary">Begin</button>
+          <p class="hint">
+            Sit toward the front of a stable chair, feet flat on the floor,
+            spine tall but soft.
+          </p>
+        </div>
+      </section>
+
+      <section id="session" class="screen" aria-label="Session">
+        <div class="progress" aria-hidden="true">
+          <div id="progress-fill"></div>
+        </div>
+
+        <div class="exercise-card">
+          <div class="exercise-head">
+            <span id="step-counter" class="step">1 / 8</span>
+            <h2 id="exercise-name">Centering breath</h2>
+          </div>
+
+          <div id="figure" class="figure" aria-hidden="true">
+            <!-- SVG injected by app.js -->
+          </div>
+
+          <p id="exercise-cue" class="cue">Sit tall. Let the shoulders drop.</p>
+          <p id="exercise-detail" class="detail"></p>
+
+          <div class="timer-row">
+            <div class="timer">
+              <span id="time-left">0:30</span>
+              <span class="timer-label">remaining</span>
+            </div>
+            <div class="rep-hint" id="rep-hint"></div>
+          </div>
+
+          <div class="controls">
+            <button id="prev-btn" class="ghost">‹ Back</button>
+            <button id="pause-btn" class="primary">Pause</button>
+            <button id="next-btn" class="ghost">Skip ›</button>
+          </div>
+          <button id="end-btn" class="link">End session</button>
+        </div>
+      </section>
+
+      <section id="done" class="screen" aria-label="Finished">
+        <div class="card">
+          <h2>Practice complete</h2>
+          <p class="lead">
+            Take a slow breath. Notice how you feel. Stand up only when you're
+            ready — give your body a moment to come back.
+          </p>
+          <button id="restart-btn" class="primary">Practice again</button>
+        </div>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
